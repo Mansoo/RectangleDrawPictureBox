@@ -66,7 +66,8 @@ namespace WinFormsApp1
                     return;
 
                 _dragStartedLocation = null;
-                _selectedRectangle = rect;
+                if(IsValidRectangle(rect))
+                    _selectedRectangle = rect;
                 Debug.WriteLine("MouseUp - new rectangle = " + _selectedRectangle);
 
                 Invalidate();
@@ -86,6 +87,19 @@ namespace WinFormsApp1
             base.OnMouseMove(e);
         }
 
+        /// <summary>
+        /// 사각형 안에 온전히 들어와 있는지 확인
+        /// </summary>
+        /// <returns></returns>
+        bool IsValidRectangle(Rectangle? rect)
+        {
+            if (rect.HasValue)
+            {
+                return (rect?.X >= 0 && rect?.Y >= 0 && (rect?.X + rect?.Width) < Width && (rect?.Y + rect?.Height) < Height);
+            }
+            return false;
+        }
+
         protected override void OnPaint(PaintEventArgs pe)
         {
             if (_dragStartedLocation.HasValue)
@@ -99,7 +113,11 @@ namespace WinFormsApp1
                 {
                     var rect = CalculateRectangle(_dragStartedLocation.Value, currentLocation.Value);
                     if (rect != null)
-                        pe.Graphics.DrawRectangle(newRectanglePen, rect.Value);
+                    {
+                        var pen = IsValidRectangle(rect) ? newRectanglePen : badNewRectanglePen;
+                        Debug.WriteLine(rect + " " + (IsValidRectangle(rect) ? "GOOD" : "BAD"));
+                        pe.Graphics.DrawRectangle(pen, rect.Value);
+                    }
                 }
 
             }
