@@ -19,6 +19,8 @@ namespace WinFormsApp1
         readonly Pen newRectanglePen = new Pen(new SolidBrush(Color.Green), 2);
         readonly Pen badNewRectanglePen = new Pen(new SolidBrush(Color.Red), 2);
 
+        public event EventHandler<Rectangle>? SelectedRectangleChanged;
+
         public AreaSelectablePictureBox()
         {
             _selectedRectangle = null;
@@ -66,9 +68,17 @@ namespace WinFormsApp1
                     return;
 
                 _dragStartedLocation = null;
-                if(IsValidRectangle(rect))
+                if (IsValidRectangle(rect))
+                {
                     _selectedRectangle = rect;
-                Debug.WriteLine("MouseUp - new rectangle = " + _selectedRectangle);
+                    Debug.WriteLine("MouseUp - new rectangle = " + _selectedRectangle);
+
+                    try
+                    {
+                        SelectedRectangleChanged?.Invoke(this, _selectedRectangle.Value);
+                    }
+                    catch { }
+                }
 
                 Invalidate();
             }
@@ -102,6 +112,7 @@ namespace WinFormsApp1
 
         protected override void OnPaint(PaintEventArgs pe)
         {
+            base.OnPaint(pe);
             if (_dragStartedLocation.HasValue)
             {
                 // 기존 사각형 그리기
@@ -126,7 +137,6 @@ namespace WinFormsApp1
                 // 선택된 사각형 그리기
                 pe.Graphics.DrawRectangle(currentRectanglePen, _selectedRectangle.Value);
             }
-            base.OnPaint(pe);
         }
 
     }
